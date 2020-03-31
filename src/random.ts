@@ -16,23 +16,7 @@
  * DEALINGS IN THE SOFTWARE.
 */
 
-
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
-
-Vue.use(VueRouter)
-
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-]
-
-const router = new VueRouter({
-  routes
-})
-
-export default router
+//! Number between inclusive of min and max-1
+export function in_range(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
