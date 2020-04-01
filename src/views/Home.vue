@@ -19,7 +19,7 @@
 
 <template>
   <div class="home">
-    <h1>D&D Calculation Site</h1>
+    <h1>Dice Roller</h1>
     <table>
       <DiceRoller v-for="(dice_type, index) in dice_types" :dice_type="dice_type" :key="index" />
     </table>

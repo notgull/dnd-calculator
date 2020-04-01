@@ -1,0 +1,2 @@
+ALTER TABLE ActionTakers RENAME TO Characters;
+ALTER TABLE Room RENAME TO Rooms;

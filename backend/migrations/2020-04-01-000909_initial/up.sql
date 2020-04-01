@@ -1,0 +1,14 @@
+CREATE TABLE Rooms (
+  id SERIAL PRIMARY KEY
+);
+
+CREATE TABLE Characters (
+  id SERIAL PRIMARY KEY,
+  room_id INTEGER REFERENCES Rooms(id),
+  name VARCHAR NOT NULL,
+  x FLOAT NOT NULL,
+  y FLOAT NOT NULL,
+  armor_class INTEGER NOT NULL,
+  health INTEGER NOT NULL,
+  dead BOOLEAN NOT NULL DEFAULT 'f'
+);

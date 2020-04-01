@@ -1,0 +1,15 @@
+[package]
+name = "dnd-calculator"
+version = "0.1.0"
+authors = ["not_a_seagull <jtnunley01@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+actix-files = "0.2"
+actix-rt = "1"
+actix-web = "2"
+diesel = { version = "1", features = ["postgres", "r2d2"] }
+dotenv = "0.15.0"
+env_logger = "0.7"
+log = "0.4.8"
+serde = { version = "1", features = ["derive"] }
