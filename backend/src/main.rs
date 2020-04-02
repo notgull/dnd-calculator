@@ -81,6 +81,9 @@ async fn main() -> io::Result<()> {
                 "/api/create_template",
                 web::post().to(character::add_template),
             )
+            .route("/api/list_templates", web::post().to(character::list_templates))
+            .route("/api/get_template", web::post().to(character::get_template))
+            .route("/api/edit_template", web::post().to(character::edit_template))
             .route("/", web::get().to(get_root))
             .route("/{filename:.*}", web::get().to(get_file))
     })

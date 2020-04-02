@@ -17,30 +17,88 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-use crate::{models::Template, DbPool};
+use crate::{models::{ChangedTemplate, NewTemplate, Template}, DbPool};
 use actix_web::{web, Error, HttpResponse, Result as ActixResult};
 use diesel::prelude::*;
 
 fn add_template_impl(
     conn: &PgConnection,
-    template: &Template,
-) -> Result<(), diesel::result::Error> {
+    template: &NewTemplate,
+) -> Result<i32, diesel::result::Error> {
     use crate::schema::templates::dsl::*;
 
-    diesel::insert_into(templates)
+    let tid = diesel::insert_into(templates)
         .values(template)
-        .execute(conn)?;
+        .returning(id)
+        .get_result(conn)?;
+
+    Ok(tid)
+}
+
+/// Add a template to the setup.
+pub async fn add_template(
+    pool: web::Data<DbPool>,
+    template: web::Json<NewTemplate>,
+) -> ActixResult<HttpResponse, Error> {
+    let conn = pool.get().unwrap();
+
+    let returned_id = web::block(move || add_template_impl(&conn, &template)).await.map_err(|e| {
+        log::error!("{:?}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+
+    HttpResponse::Ok().json(returned_id).await
+}
+
+fn list_templates_impl(conn: &PgConnection) -> Result<Vec<(i32, String, String)>, diesel::result::Error> {
+    use crate::schema::templates::dsl::*;
+
+    let res = templates.select((id, name, description)).load::<(i32, String, String)>(&*conn)?;
+    Ok(res)
+}
+
+/// Get a list of all of the needed templates
+pub async fn list_templates(pool: web::Data<DbPool>) -> ActixResult<HttpResponse, Error> {
+    let conn = pool.get().unwrap();
+
+    let result = web::block(move || list_templates_impl(&conn)).await.map_err(|e| {
+        log::error!("{:?}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+
+    HttpResponse::Ok().json(result).await
+}
+
+fn get_template_impl(conn: &PgConnection, tid: i32) -> Result<Template, diesel::result::Error> {
+    use crate::schema::templates::dsl::*;
+
+    let res = templates.filter(id.eq(tid)).get_result(conn)?;
+    Ok(res)
+}
+
+/// Get a template by its template ID
+pub async fn get_template(pool: web::Data<DbPool>, tid: web::Json<i32>) -> ActixResult<HttpResponse, Error> {
+    let conn = pool.get().unwrap();
+    let result = web::block(move || get_template_impl(&conn, *tid)).await.map_err(|e| {
+        log::error!("{:?}", e);
+        HttpResponse::InternalServerError().finish()
+    })?;
+
+    HttpResponse::Ok().json(result).await
+}
+
+fn edit_template_impl(conn: &PgConnection, tid: i32, template: &ChangedTemplate) -> Result<(), diesel::result::Error> {
+    use crate::schema::templates::dsl::*;
+
+    diesel::update(templates).filter(id.eq(tid)).set(template).execute(conn)?;
 
     Ok(())
 }
 
-pub async fn add_template(
-    pool: web::Data<DbPool>,
-    template: web::Json<Template>,
-) -> ActixResult<HttpResponse, Error> {
+/// Edit a template.
+pub async fn edit_template(pool: web::Data<DbPool>, tid: web::Json<i32>, template: web::Json<ChangedTemplate>) -> ActixResult<HttpResponse, Error> {
     let conn = pool.get().unwrap();
-
-    web::block(move || add_template_impl(&conn, &template)).await.map_err(|e| {
+    web::block(move || edit_template_impl(&conn, *tid, &template)).await.map_err(|e| {
         log::error!("{:?}", e);
         HttpResponse::InternalServerError().finish()
     })?;

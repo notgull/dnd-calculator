@@ -23,6 +23,7 @@
         <tr>
           <td class="title"><h1>D&D Calculations Site</h1></td>
           <td><router-link to="/">Home</router-link></td>
+          <td><router-link to="/template">Templates</router-link></td>
         </tr>
       </table>
     </div>

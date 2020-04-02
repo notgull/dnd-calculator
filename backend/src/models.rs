@@ -21,9 +21,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::schema::{actiontakers as action_takers, items, moves, room as rooms, templates};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 pub struct ActionTaker {
-    pub id: i32,
     pub room_id: i32,
     pub name: String,
     pub x: f64,
@@ -33,24 +32,24 @@ pub struct ActionTaker {
     pub dead: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 pub struct Room {
     pub id: i32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 pub struct Move {
     pub id: i32,
     pub name: String,
     hit_type: i32,
-    pub hit_radius: i32,
+    pub hit_radius: Option<i32>,
     pub dice_count: i32,
     pub dice_type: i32,
     pub dice_modifier: i32,
     stat_boost: i32,
     saving_throw: i32,
-    pub effect: i32,
-    pub effect_severity: i32,
+    pub effect: Option<i32>,
+    pub effect_severity: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
@@ -60,11 +59,29 @@ pub struct Item {
     pub description: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable)]
 pub struct Template {
     pub id: i32,
     pub name: String,
     pub health: i32,
     pub armor_class: i32,
     pub description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[table_name = "templates"]
+pub struct NewTemplate {
+    pub name: String,
+    pub health: i32,
+    pub armor_class: i32,
+    pub description: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset)]
+#[table_name = "templates"]
+pub struct ChangedTemplate {
+    pub name: Option<String>,
+    pub health: Option<i32>,
+    pub armor_class: Option<i32>,
+    pub description: Option<String>,
 }
