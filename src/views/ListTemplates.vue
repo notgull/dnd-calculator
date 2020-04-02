@@ -21,14 +21,14 @@
     <p v-show="loading">Loading templates...</p>
     <table class="templates">
       <tr class="template" v-for="template in templates">
-        <td>{{ template.name }}</td>
+        <td class="name">{{ template.name }}</td>
         <td class="description">{{ template.description }}</td>
-        <td></td>
+        <td><input type="button" value="Edit Template" /></td>
       </tr>
     </table>
     <p><input type="button" value="Create New Template" @click="create_new_template" /></p>
     <p><input type="button" value="Refresh" @click="load_templates" /></p>
-    <TemplateEditor :is_new_template="false" :init_template_id="-1" v-if="creating_new_template" :init_template_data="null" />
+    <TemplateEditor @close="cancel_new_template" :is_new_template="true" :init_template_id="-1" v-if="creating_new_template" :init_template_data="null" @submitted="on_new_template" />
   </div>
 </template>
 
@@ -58,27 +58,56 @@ export default class ListTemplates extends Vue {
 
     async load_templates(): Promise<void> {
       if (!this.loading) {
+        this.templates = [];
+
         this.loading = true;
-        let res = await axios.post("/api/list_templates", {});
+        let { data } = await axios.post("/api/list_templates", {});
         this.loading = false;
-        console.log(res);
+        
+        data.forEach((item: any[]) => {
+          this.templates.push({
+            id: item[0],
+            name: item[1],
+            description: item[2],
+          });
+        });
       }
     }
 
     create_new_template() {
         this.creating_new_template = true;
     }
+
+    cancel_new_template() {
+        this.creating_new_template = false;
+    }
+
+    on_new_template() {
+        location.reload();
+    }
 }
 </script>
 
 <style scoped lang="scss">
 table.templates {
-  border: 1;
+  border-collapse: collapse;
+  border: 1px solid black;
 
   .template {
+    td {
+      border: 1px solid black;
+      margin: auto;
+      vertical-align: middle;
+    }
+ 
+    .name {
+      text-align: center;
+    }
+
     .description {
       width: 60%;
       overflow: scroll;
+      margin-left: 2px;
     }
   }
 }

@@ -43,6 +43,7 @@
 
 #body {
   padding-left: 10%;
+  padding-top: 10px;
 }
 
 #nav {

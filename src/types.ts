@@ -23,3 +23,5 @@ export interface Template {
     armor_class: number;
     health: number;
 };
+
+export type DeleteFunction = () => void;

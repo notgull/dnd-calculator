@@ -59,7 +59,7 @@ pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
     // initialize specific info
-    env::set_var("RUST_LOG", "actix_web=info,diesel=debug");
+    env::set_var("RUST_LOG", "actix_web=debug,diesel=debug");
     env_logger::init();
     dotenv::dotenv().ok();
 
@@ -81,9 +81,15 @@ async fn main() -> io::Result<()> {
                 "/api/create_template",
                 web::post().to(character::add_template),
             )
-            .route("/api/list_templates", web::post().to(character::list_templates))
+            .route(
+                "/api/list_templates",
+                web::post().to(character::list_templates),
+            )
             .route("/api/get_template", web::post().to(character::get_template))
-            .route("/api/edit_template", web::post().to(character::edit_template))
+            .route(
+                "/api/edit_template",
+                web::post().to(character::edit_template),
+            )
             .route("/", web::get().to(get_root))
             .route("/{filename:.*}", web::get().to(get_file))
     })

@@ -17,14 +17,14 @@
  -->
 
 <template>
-  <div class="modal-background" @click="$emit('close')" @close="do_delete">
-    <div class="modal">
-      <div class="container" :style="container_style">
+  <div class="modal-background">
+    <div class="modal" @click="$emit('close')">
+      <div class="container" :style="container_style()">
         <div class="header">
           <slot name="header"></slot>
         </div>
         <div class="body">
-          <slot name="body></slot>
+          <slot name="body"></slot>
         </div>
         <div class="footer">
           <slot name="footer"></slot>
@@ -37,21 +37,15 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
+import { DeleteFunction } from "@/types";
 import { Prop } from "vue-property-decorator";
 
-export type DeleteFunction = () => void;
-
 @Component
-export class Modal extends Vue {
+export default class Modal extends Vue {
   @Prop() width!: string;
-  @Prop() delete!: DeleteFunction;
-
-  get container_style(): string {
-    return `width: {this->width}`;
-  }
-
-  do_delete() {
-    this.delete();
+  
+  container_style(): string {
+    return `width: ${this.width}`;
   }
 };
 </script>
