@@ -20,15 +20,19 @@
   <div>
     <p v-show="loading">Loading templates...</p>
     <table class="templates">
-      <tr class="template" v-for="template in templates">
+      <tr class="template" v-for="(template, index) in templates" :key="index">
         <td class="name">{{ template.name }}</td>
         <td class="description">{{ template.description }}</td>
-        <td><input type="button" value="Edit Template" /></td>
+        <td><input type="button" value="Edit Template" @click="open_template(index)" /></td>
       </tr>
     </table>
     <p><input type="button" value="Create New Template" @click="create_new_template" /></p>
     <p><input type="button" value="Refresh" @click="load_templates" /></p>
-    <TemplateEditor @close="cancel_new_template" :is_new_template="true" :init_template_id="-1" v-if="creating_new_template" :init_template_data="null" @submitted="on_new_template" />
+    <TemplateEditor @close="editing_template = false" 
+                    :template_id="current_template_id" 
+                    :template="current_template"
+                    v-if="editing_template" 
+                    @submitted="on_template_finish" />
   </div>
 </template>
 
@@ -36,6 +40,7 @@
 import axios from "axios";
 import Vue from "vue";
 import Component from "vue-class-component";
+import { Template } from "@/types";
 
 import TemplateEditor from "@/components/TemplateEditor.vue";
 
@@ -54,7 +59,9 @@ interface TemplateDescription {
 export default class ListTemplates extends Vue {
     loading: boolean = false;
     templates: TemplateDescription[] = [];
-    creating_new_template = false;
+    editing_template = false;
+    current_template: Template | null = null;
+    current_template_id = -1;
 
     async load_templates(): Promise<void> {
       if (!this.loading) {
@@ -75,16 +82,25 @@ export default class ListTemplates extends Vue {
     }
 
     create_new_template() {
-        this.creating_new_template = true;
+        this.current_template = null;
+        this.current_template_id = -1;
+        this.editing_template = true;
     }
 
-    cancel_new_template() {
-        this.creating_new_template = false;
-    }
-
-    on_new_template() {
+    on_template_finish() {
         location.reload();
     }
+
+    async open_template(i: number): Promise<void> {
+        if (!this.loading) {
+            this.current_template_id = this.templates[i].id;
+            this.loading = true;
+            let { data } = await axios.post("/api/get_template", { tid: this.current_template_id });
+            this.loading = false;
+            this.current_template = data;
+            this.editing_template = true;
+        }
+    } 
 }
 </script>
 

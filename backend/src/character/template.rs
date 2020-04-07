@@ -23,6 +23,7 @@ use crate::{
 };
 use actix_web::{web, Error, HttpResponse, Result as ActixResult};
 use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
 fn add_template_impl(
     conn: &PgConnection,
@@ -91,13 +92,19 @@ fn get_template_impl(conn: &PgConnection, tid: i32) -> Result<Template, diesel::
     Ok(res)
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct TidWrapper {
+    tid: i32,
+}
+
 /// Get a template by its template ID
 pub async fn get_template(
     pool: web::Data<DbPool>,
-    tid: web::Json<i32>,
+    tid: web::Json<TidWrapper>,
 ) -> ActixResult<HttpResponse, Error> {
+    let TidWrapper { tid } = tid.into_inner();
     let conn = pool.get().unwrap();
-    let result = web::block(move || get_template_impl(&conn, *tid))
+    let result = web::block(move || get_template_impl(&conn, tid))
         .await
         .map_err(|e| {
             log::error!("{:?}", e);
@@ -122,14 +129,21 @@ fn edit_template_impl(
     Ok(())
 }
 
+#[derive(Clone, Deserialize, Serialize)]
+pub struct EditTemplateReq {
+    tid: i32,
+    template: ChangedTemplate,
+}
+
 /// Edit a template.
 pub async fn edit_template(
     pool: web::Data<DbPool>,
-    tid: web::Json<i32>,
-    template: web::Json<ChangedTemplate>,
+    template: web::Json<EditTemplateReq>,
 ) -> ActixResult<HttpResponse, Error> {
     let conn = pool.get().unwrap();
-    web::block(move || edit_template_impl(&conn, *tid, &template))
+    let templ = template.into_inner();
+
+    web::block(move || edit_template_impl(&conn, templ.tid, &templ.template))
         .await
         .map_err(|e| {
             log::error!("{:?}", e);

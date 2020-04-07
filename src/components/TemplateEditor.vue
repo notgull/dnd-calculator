@@ -20,10 +20,10 @@
   <Modal :width="'50%'">
     <h2 slot="header">Edit Template</h2>
     <div slot="body">
-      <p><b>Name: </b><input type="text" v-model="name" @change="name_changed = true" /></p>
-      <p><b>Description: </b><input type="text" v-model="description" @change="desc_changed = true" /></p>
-      <p><b>Health: </b><input type="number" v-model="health" @change="h_changed = true" /></p>
-      <p><b>Armor Class: </b><input type="number" v-model="armor_class" @change="ac_changed = true" /></p>
+      <p><b>Name: </b><input type="text" v-model="template_data.name" @change="prop_change('name')" /></p>
+      <p><b>Description: </b><input type="text" v-model="template_data.description" @change="prop_change('desc')" /></p>
+      <p><b>Health: </b><input type="number" v-model="template_data.health" @change="prop_change('health')" /></p>
+      <p><b>Armor Class: </b><input type="number" v-model="template_data.armor_class" @change="prop_change('ac')" /></p>
     </div>
     <div slot="footer">
       <input type="button" value="Submit" :disabled="!validity()" @click="submit" />
@@ -37,85 +37,68 @@ import axios from "axios";
 import Modal from "./Modal.vue";
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import { DeleteFunction, Template } from "@/types";
 
 @Component({
-  components: { Modal },
+  components: { Modal }
 })
 export default class TemplateEditor extends Vue {
-  @Prop() is_new_template!: boolean;
-  @Prop() init_template_id!: number;
-  @Prop() init_template_data!: Template;
+  @Prop({ type: Number, default: -1 }) template_id!: number;
+  @Prop({ type: Object, default: null }) template!: Template | null;
 
-  _new_template: boolean | null = null;
-  _template_id: number | null = null;
+  changed_props: string[] = [];
 
-  name: String = "";
-  name_changed: boolean = false;
+  prop_change(val: string) {
+    if (this.changed_props.indexOf(val) === -1) {
+      this.changed_props.push(val);
+    }
+  }
 
-  description: String = "";
-  desc_changed: boolean = false;
+  template_data: Template = {
+    name: "",
+    health: 0,
+    armor_class: 0,
+    description: "",
+  }; 
 
-  health: number = 1;
-  h_changed: boolean = false;
+  @Watch("template", { deep: true, immediate: true })
+  update_template(tmpl: Template) {
+    console.log("Template updated!");
+    if (tmpl) {
+      this.template_data = tmpl;
+    }
+  }
 
-  armor_class: number = 10;
-  ac_changed: boolean = false;
+  get mdl(): Template { return this.template_data; }
   
   submitting: boolean = false;
 
   validity() {
-    return this.name.length > 0 &&
-           this.description.length > 0 &&
-           this.health > 0 &&
-           this.armor_class > 0 &&
+    return this.mdl.name.length > 0 &&
+           this.mdl.description.length > 0 &&
+           this.mdl.health > 0 &&
+           this.mdl.armor_class > 0 &&
            !this.submitting;
-  }
-
-  get new_template(): boolean {
-    if (this._new_template === null || this._new_template === undefined) {
-      this._new_template = this.is_new_template;
-    }
-    return this._new_template;
-  }
-
-  set new_template(val: boolean) {
-    this._new_template = val;
-  }
-
-  get template_id(): number {
-    if (this._template_id === null || this._template_id === undefined) {
-      this._template_id = this.init_template_id;
-    }
-    return this._template_id;
-  }
-
-  set template_id(val: number) {
-    this._template_id = val;
   }
 
   async submit() {
     let template = {
-      name: this.name, 
+      name: this.mdl ? this.mdl.name : "",
       // @ts-ignore
-      health: parseInt(this.health, 10),
+      health: parseInt(this.template_data.health, 10),
       // @ts-ignore
-      armor_class: parseInt(this.armor_class, 10),
-      description: this.description, 
-    };  
-    
-    console.log("Is this a new template? ", this.new_template);
-    console.log("Is this a new template?? ", this.is_new_template);
-    console.log("Template: ", JSON.stringify(template));
+      armor_class: parseInt(this.template_data.armor_class, 10),
+      description: this.mdl  ? this.mdl.description : "", 
+    };
 
     this.submitting = true;
     try {
-      if (this.new_template) {
-        let { res } = await axios.post("/api/create_template", template);
-        console.log(res); // TODO: not this
+      // @ts-ignore
+      if (parseInt(this.template_id, -1) !== -1) {
+        await axios.post("/api/create_template", template);
       } else {
-        await axios.post("/api/edit_template", { template, tid: this.template_id });
+        await axios.post("/api/edit_template", { tid: this.template_id, template });
       }
     } finally {
       this.submitting = false;
