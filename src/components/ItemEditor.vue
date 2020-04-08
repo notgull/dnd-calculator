@@ -21,9 +21,11 @@
     <h2 slot="header">Edit Item</h2>
     <div slot="body">
       <p><b>Name: </b><input type="text" v-model="item_data.name" /></p>
+      <p><b>Description: </b><input type="text" v-model="item_data.description" /></p>
     </div>
     <div slot="footer">
- 
+      <input type="button" value="Cancel" @click="$emit('close')" />
+      <input type="button" value="Submit" :disabled="!validity()" @click="submit" />
     </div>
   </Modal>
 </template>

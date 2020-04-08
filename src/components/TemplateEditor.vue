@@ -24,6 +24,26 @@
       <p><b>Description: </b><input type="text" v-model="template_data.description" @change="prop_change('desc')" /></p>
       <p><b>Health: </b><input type="number" v-model="template_data.health" @change="prop_change('health')" /></p>
       <p><b>Armor Class: </b><input type="number" v-model="template_data.armor_class" @change="prop_change('ac')" /></p>
+      <p>
+        <table>
+          <tr>
+            <td>
+              <b>Items Used: </b>
+            </td>
+            <td>
+              <SelectItem @submitted_item="item_chosen" />
+            </td> 
+            <td v-if="items.length > 0">
+              <p>Selected Items: </p>
+              <ul>
+                <li v-for="(item, index) in items" :key="index">
+                  <p>{{ item.item.name }} - <input type="button" value="Remove" @click="item_chosen(index)" /></p>
+                </li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+      </p>
     </div>
     <div slot="footer">
       <input type="button" value="Submit" :disabled="!validity()" @click="submit" />
@@ -40,14 +60,25 @@ import Component from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import { DeleteFunction, Template } from "@/types";
 
+import { ItemDescriptor, SelectItem } from "./SelectItem.vue";
+
 @Component({
-  components: { Modal }
+  components: { Modal, SelectItem }
 })
 export default class TemplateEditor extends Vue {
   @Prop({ type: Number, default: -1 }) template_id!: number;
   @Prop({ type: Object, default: null }) template!: Template | null;
 
   changed_props: string[] = [];
+  items: ItemDescriptor[] = [];
+
+  item_chosen(item: ItemDescription) {
+    items.push(item);
+  }
+
+  remove_item(index: number) {
+    items.splice(index, 1);;
+  }
 
   prop_change(val: string) {
     if (this.changed_props.indexOf(val) === -1) {

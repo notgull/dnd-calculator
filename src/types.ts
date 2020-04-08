@@ -30,3 +30,4 @@ export interface Item {
 };
 
 export type DeleteFunction = () => void;
+export type SelectItemFunction = (item) => void;
