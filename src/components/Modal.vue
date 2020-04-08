@@ -17,7 +17,7 @@
  -->
 
 <template>
-  <div class="modal-background">
+  <div class="modal-background" :style="background_style()">
     <div class="modal" @click="$emit('close')">
       <div class="container" :style="container_style()">
         <div class="header">
@@ -43,9 +43,14 @@ import { Prop } from "vue-property-decorator";
 @Component
 export default class Modal extends Vue {
   @Prop() width!: string;
+  @Prop({ default: 12 }) z_index: number;
   
   container_style(): string {
     return `width: ${this.width}`;
+  }
+
+  background_style(): string {
+    return `z-index: ${this.z_index}`;
   }
 };
 </script>
@@ -53,7 +58,6 @@ export default class Modal extends Vue {
 <style scoped lang="scss">
 .modal-background {
   position: fixed;
-  z-index: 12;
   top: 0;
   left: 0;
   width: 100%;

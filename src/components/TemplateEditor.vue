@@ -74,7 +74,7 @@ export default class TemplateEditor extends Vue {
   
   submitting: boolean = false;
 
-  validity() {
+  validity(): boolean {
     return this.mdl.name.length > 0 &&
            this.mdl.description.length > 0 &&
            this.mdl.health > 0 &&
@@ -95,7 +95,7 @@ export default class TemplateEditor extends Vue {
     this.submitting = true;
     try {
       // @ts-ignore
-      if (parseInt(this.template_id, -1) !== -1) {
+      if (parseInt(this.template_id, 10) === -1) {
         await axios.post("/api/create_template", template);
       } else {
         await axios.post("/api/edit_template", { tid: this.template_id, template });

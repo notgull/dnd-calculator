@@ -90,6 +90,9 @@ async fn main() -> io::Result<()> {
                 "/api/edit_template",
                 web::post().to(character::edit_template),
             )
+            .route("/api/create_item", web::post().to(character::add_item))
+            .route("/api/list_items", web::post().to(character::list_items))
+            .route("/api/edit_item", web::post().to(character::edit_item))
             .route("/", web::get().to(get_root))
             .route("/{filename:.*}", web::get().to(get_file))
     })

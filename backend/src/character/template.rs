@@ -48,8 +48,6 @@ pub async fn add_template(
 ) -> ActixResult<HttpResponse, Error> {
     let conn = pool.get().unwrap();
 
-    log::warn!("We've made it here!");
-
     let returned_id = web::block(move || add_template_impl(&conn, &template))
         .await
         .map_err(|e| {

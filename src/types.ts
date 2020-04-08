@@ -24,4 +24,9 @@ export interface Template {
     health: number;
 };
 
+export interface Item {
+    name: string;
+    description: string;
+};
+
 export type DeleteFunction = () => void;
